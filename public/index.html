@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TaskFlow</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<main>
+
+  <div class="site-top">
+    <span>✦ TASKFLOW ✦</span>
+    <nav>
+      <a href="#tasks">tasks</a>
+      <a href="#about">about</a>
+      <a href="#tutorial">tutorial 01</a>
+    </nav>
+  </div>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+
+      <section class="side-box">
+        <h2>♡ welcome</h2>
+        <p>A tiny task space for keeping track of everyday things.</p>
+      </section>
+
+      <section class="side-box">
+        <h2>✦ status</h2>
+        <div class="status">
+          <span class="status-dot"></span>
+          online
+        </div>
+      </section>
+
+      <section class="side-box">
+        <h2>୨୧ project</h2>
+        <p class="small-text">TaskFlow</p>
+        <p class="small-text">Tutorial 01</p>
+        <p class="small-text">Terminology</p>
+      </section>
+
+      <div class="side-decoration">
+        ♡<br>
+        ✦<br>
+        ♡
+      </div>
+
+    </aside>
+
+    <div class="content">
+
+      <div class="welcome-banner">
+        <span>✦</span>
+        <span>WELCOME TO MY TASK SPACE</span>
+        <span>✦</span>
+      </div>
+
+      <h1>TaskFlow</h1>
+
+      <p>Small task-management demo for Tutorial 01.</p>
+
+      <div class="badges">
+        <span class="badge">CALCULATOR</span>
+        <span class="badge">TASKS</span>
+        <span class="badge">TUTORIAL 01</span>
+      </div>
+
+      <section class="calculator-box">
+
+        <div class="box-title">✦ price calculator ✦</div>
+
+        <p>
+          A small feature for demonstrating runtime behavior.
+        </p>
+
+        <button id="open-calculator">Calculate price</button>
+
+      </section>
+
+      <div class="section-divider">
+        <span>♡</span>
+        <span>────────────</span>
+        <span>✦</span>
+        <span>────────────</span>
+        <span>♡</span>
+      </div>
+
+      <section class="task-area">
+
+        <div class="section-heading">
+          <span>✎</span>
+          <span>things to do</span>
+        </div>
+
+        <div class="row">
+          <input id="title" placeholder="New task">
+          <button id="add">Add task</button>
+        </div>
+
+        <ul id="tasks"></ul>
+
+      </section>
+
+      <div class="mini-note">
+        <span>♡</span>
+        Keep things small, simple and organized.
+        <span>♡</span>
+      </div>
+
+      <section class="about-box" id="about">
+        <div class="box-title">✦ about this page ✦</div>
+        <p>
+          TaskFlow is a small demonstration project created
+          for the professional programming terminology course.
+        </p>
+      </section>
+
+      <section class="tutorial-box" id="tutorial">
+        <div class="box-title">୨୧ tutorial 01</div>
+        <p>
+          A practical space for exploring software concepts
+          through a small working project.
+        </p>
+        <div class="concept-list">
+          <span>codebase</span>
+          <span>feature</span>
+          <span>bug</span>
+          <span>runtime</span>
+          <span>dependency</span>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <footer>
+    <div>✦ ─────── ♡ ─────── ✦</div>
+    <div>TaskFlow · Tutorial 01</div>
+    <div>made with ♡ and code</div>
+  </footer>
+
+</main>
+
+<div id="calculator-modal" class="calculator-modal hidden">
+
+  <div class="calculator-window">
+
+    <div class="calculator-header">
+      <span>✦ calculate price ✦</span>
+      <button id="close-calculator" class="calculator-close">×</button>
+    </div>
+
+    <div class="calculator-content">
+
+      <label for="price">Price</label>
+      <input id="price" type="number" min="0" step="0.01" placeholder="10">
+
+      <label for="quantity">Quantity</label>
+      <input id="quantity" type="number" min="1" step="1" placeholder="3">
+
+      <button id="calculate">Calculate</button>
+
+      <div id="calculator-result" class="calculator-result hidden"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const list = document.querySelector("#tasks");
+
+async function load() {
+  const r = await fetch("/api/tasks");
+  const tasks = await r.json();
+
+  list.innerHTML = "";
+
+  for (const t of tasks) {
+    const li = document.createElement("li");
+
+    const span = document.createElement("span");
+    span.textContent = t.title;
+
+    if (t.completed) {
+      span.className = "done";
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    if (!t.completed) {
+      const b = document.createElement("button");
+      b.className = "complete";
+      b.textContent = "Complete";
+
+      b.onclick = async () => {
+        await fetch("/api/tasks/" + t.id + "/complete", {
+          method: "PATCH"
+        });
+
+        load();
+      };
+
+      actions.append(b);
+    }
+
+    const d = document.createElement("button");
+    d.className = "delete";
+    d.textContent = "Delete";
+
+    d.onclick = async () => {
+      await fetch("/api/tasks/" + t.id, {
+        method: "DELETE"
+      });
+
+      load();
+    };
+
+    actions.append(d);
+    li.append(span, actions);
+    list.append(li);
+  }
+}
+
+document.querySelector("#add").onclick = async () => {
+  const input = document.querySelector("#title");
+
+  if (!input.value.trim()) {
+    return;
+  }
+
+  await fetch("/api/tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      title: input.value
+    })
+  });
+
+  input.value = "";
+  load();
+};
+
+const calculatorModal = document.querySelector("#calculator-modal");
+const openCalculator = document.querySelector("#open-calculator");
+const closeCalculator = document.querySelector("#close-calculator");
+const calculateButton = document.querySelector("#calculate");
+const calculatorResult = document.querySelector("#calculator-result");
+
+openCalculator.onclick = () => {
+  calculatorModal.classList.remove("hidden");
+  calculatorResult.classList.add("hidden");
+};
+
+closeCalculator.onclick = () => {
+  calculatorModal.classList.add("hidden");
+};
+
+calculatorModal.onclick = (event) => {
+  if (event.target === calculatorModal) {
+    calculatorModal.classList.add("hidden");
+  }
+};
+
+calculateButton.onclick = async () => {
+  const price = Number(document.querySelector("#price").value);
+  const quantity = Number(document.querySelector("#quantity").value);
+
+  const response = await fetch("/api/price", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      price,
+      quantity
+    })
+  });
+
+  const data = await response.json();
+
+  calculatorResult.textContent = `Total: ${data.total}`;
+  calculatorResult.classList.remove("hidden");
+};
+
+load();
+</script>
+
+</body>
+</html>

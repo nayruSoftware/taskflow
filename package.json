@@ -1,0 +1,24 @@
+{
+  "name": "taskflow",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Small recording project for Tutorial 01 - Professional Programming Terminology",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc",
+    "start": "node dist/src/server.js",
+    "test": "vitest run",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.5.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
